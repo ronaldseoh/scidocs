@@ -16,12 +16,12 @@ cd scidocs
 conda create -y --name scidocs python==3.7
 conda activate scidocs
 conda install -y -q -c conda-forge numpy pandas scikit-learn=0.22.2 jsonlines tqdm sklearn-contrib-lightning pytorch
-pip install pytrec_eval awscli allennlp==0.9
+pip install pytrec_eval awscli allennlp==0.9 overrides==3.1.0
 python setup.py install
 ```
 
 To obtain the data, run this command after the package is installed (from inside the `scidocs` folder):  
-```[Expected download size is: 3.3 GiB]```
+```[Expected download size is: 4.6 GiB]```
 
 `aws s3 sync --no-sign-request s3://ai2-s2-research-public/specter/scidocs/ data/`
 
