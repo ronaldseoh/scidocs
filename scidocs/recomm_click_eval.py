@@ -14,7 +14,7 @@ import scidocs.recommender.simpaper_recommender
 from scidocs.recommender.simpaper_recommender import SimpaperRecommender
 import csv
 
-import json
+import ujson as json
 import shutil
 
 import tqdm

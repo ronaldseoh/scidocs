@@ -3,7 +3,7 @@ from scidocs.paths import DataPaths
 from scidocs import get_scidocs_metrics
 
 import argparse
-import json
+import ujson as json
 import pandas as pd
 
 

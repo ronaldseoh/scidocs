@@ -12,7 +12,7 @@ from allennlp.modules import Seq2VecEncoder, TextFieldEmbedder, TimeDistributed,
 from allennlp.nn import RegularizerApplicator, InitializerApplicator, util
 from allennlp.training.metrics import CategoricalAccuracy, Average
 
-import json
+import ujson as json
 
 @Model.register('simpaper_recommender')
 class SimpaperRecommender(Model):
