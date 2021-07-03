@@ -9,3 +9,4 @@ allennlp==0.9
 overrides==3.1.0
 awscli
 jsonnet
+ujson==4.0.2
