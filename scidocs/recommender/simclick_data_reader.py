@@ -1,6 +1,6 @@
 """ Data reader for similar paper click data. """
 from typing import Dict, List, Optional
-import json
+import ujson as json
 import logging
 
 import jsonlines
@@ -54,11 +54,12 @@ class SimClickDataReader(DatasetReader):
             self.papers = json.load(f_in)
         if jsonlines_embedding_format:  # each line is a jsondict
             with jsonlines.open(paper_embeddings_path) as f_in:
-                self.paper_embeddings = {e['paper_id']: e['embedding'] for e in f_in}
+                self.paper_embeddings = {e['paper_id']: np.array(e['embedding']).flatten() for e in f_in}
         else:
             with open(paper_embeddings_path) as f_in:
                 self.paper_embeddings = json.load(f_in)
-        self.embedding_dims = len(next(iter(self.paper_embeddings.values())))
+        # Take one of the facet embeddings to check dim
+        self.embedding_dims = len(next(iter(self.paper_embeddings.values()))[0])
         self.sdr = SimClickTripletSampler(max_results_per_query)
 
 
@@ -173,7 +174,7 @@ class SimClickDataReader(DatasetReader):
             return numpy.log(len(set(self.papers[candidate_paper]['cited_by']))+1)/10.0
 
     @staticmethod
-    def valueOrZeros(d: Dict[str, list], k: str, num_dims: int):
+    def valueOrZeros(d: Dict[str, np.ndarray], k: str, num_dims: int):
         if not k in d:
             return numpy.zeros(num_dims)
         elif len(d[k])==0: #other failure mode
