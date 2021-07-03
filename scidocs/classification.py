@@ -77,18 +77,22 @@ def get_X_y_for_classification(embeddings, train_path, val_path, test_path):
         X, y: dictionaries of training X and training y
               with keys: 'train', 'val', 'test'
     """
-    dim = len(next(iter(embeddings.values())))
+    num_facets = len(next(iter(embeddings.values())))
+    dim = len(next(iter(embeddings.values()))[0])
+
     train = pd.read_csv(train_path)
     val = pd.read_csv(val_path)
     test = pd.read_csv(test_path)
+
     X = defaultdict(list)
     y = defaultdict(list)
+
     for dataset_name, dataset in zip(['train', 'val', 'test'], [train, val, test]):
         for s2id, class_label in dataset.values:
             if s2id not in embeddings:
-                X[dataset_name].append(np.zeros(dim))
+                X[dataset_name].append(np.zeros(dim * num_facets))
             else:
-                X[dataset_name].append(embeddings[s2id])
+                X[dataset_name].append(embeddings[s2id].flatten())
             y[dataset_name].append(class_label)
         X[dataset_name] = np.array(X[dataset_name])
         y[dataset_name] = np.array(y[dataset_name])
