@@ -127,7 +127,7 @@ def make_run_from_embeddings(qrel_file, embeddings, run_file, topk=5, generate_r
             if generate_random_embeddings:
                 emb_query = np.random.normal(0, 0.67, 200)
             else:
-                emb_query = embeddings[pid]
+                emb_query = embeddings[pid].flatten()
         except KeyError:
             missing_queries += 1
             continue
@@ -142,7 +142,7 @@ def make_run_from_embeddings(qrel_file, embeddings, run_file, topk=5, generate_r
                 if generate_random_embeddings:
                     emb_candidates.append(np.random.normal(0, 0.67, 200))
                 else:
-                    emb_candidates.append(embeddings[paper_id])
+                    emb_candidates.append(embeddings[paper_id].flatten())
                 candidate_ids.append(paper_id)
                 success_candidates += 1
             except KeyError:
