@@ -59,7 +59,7 @@ class SimClickDataReader(DatasetReader):
             with open(paper_embeddings_path) as f_in:
                 self.paper_embeddings = json.load(f_in)
         # Take one of the facet embeddings to check dim
-        self.embedding_dims = len(next(iter(self.paper_embeddings.values()))[0])
+        self.embedding_dims = len(next(iter(self.paper_embeddings.values())))
         self.sdr = SimClickTripletSampler(max_results_per_query)
 
 
