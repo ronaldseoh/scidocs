@@ -54,7 +54,7 @@ class SimClickDataReader(DatasetReader):
             self.papers = json.load(f_in)
         if jsonlines_embedding_format:  # each line is a jsondict
             with jsonlines.open(paper_embeddings_path) as f_in:
-                self.paper_embeddings = {e['paper_id']: np.array(e['embedding']).flatten() for e in f_in}
+                self.paper_embeddings = {e['paper_id']: numpy.array(e['embedding']).flatten() for e in f_in}
         else:
             with open(paper_embeddings_path) as f_in:
                 self.paper_embeddings = json.load(f_in)
