@@ -139,7 +139,7 @@ def get_recomm_metrics(data_paths:DataPaths, embeddings_path, val_or_test='test'
     print('Loading recomm embeddings...')
     with open(embeddings_path, 'r') as f:
         line = json.loads(next(f))
-        num_dims = len(line['embedding'][0])
+        num_dims = len(line['embedding'][0]) * len(line['embedding'])
 
     print('Running the recomm task...')
     config_path = data_paths.recomm_config
