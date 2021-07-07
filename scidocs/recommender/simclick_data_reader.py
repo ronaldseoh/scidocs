@@ -174,7 +174,7 @@ class SimClickDataReader(DatasetReader):
             return numpy.log(len(set(self.papers[candidate_paper]['cited_by']))+1)/10.0
 
     @staticmethod
-    def valueOrZeros(d: Dict[str, np.ndarray], k: str, num_dims: int):
+    def valueOrZeros(d: Dict[str, numpy.ndarray], k: str, num_dims: int):
         if not k in d:
             return numpy.zeros(num_dims)
         elif len(d[k])==0: #other failure mode
