@@ -11,7 +11,7 @@ from scidocs.embeddings import load_embeddings_from_jsonl
 np.random.seed(1)
 
 
-def get_mag_mesh_metrics(data_paths, embeddings_path=None, val_or_test='test', n_jobs=1):
+def get_mag_mesh_metrics(data_paths, embeddings_path=None, val_or_test='test', multifacet_behavior='concat', n_jobs=1):
     """Run MAG and MeSH tasks.
 
     Arguments:

@@ -117,7 +117,7 @@ def evaluate_ranking_performance(archive_path, test_data_path, cuda_device):
     return metrics
 
 
-def get_recomm_metrics(data_paths:DataPaths, embeddings_path, val_or_test='test', cuda_device=-1):
+def get_recomm_metrics(data_paths:DataPaths, embeddings_path, val_or_test='test', multifacet_behavior='concat', cuda_device=-1):
     """Run the recommendations task evaluation.
 
     Arguments:

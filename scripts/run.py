@@ -1,4 +1,3 @@
-
 from scidocs.paths import DataPaths
 from scidocs import get_scidocs_metrics
 
@@ -16,6 +15,9 @@ def main():
     parser.add_argument('--user-citation', '--user_activity_and_citations_embeddings_path', dest='user_citation', help='path to user activity embeddings (coview, copdf, cocite, citation)')
     parser.add_argument('--recomm', '--recomm_embeddings_path', dest='recomm', help='path to recommender related embeddings')
     parser.add_argument('--val_or_test', default='test', help='whether to evaluate scidocs on test data (what is reported in the specter paper) or validation data (to tune hyperparameters)')
+
+    parser.add_argument('--multifacet-behavior', default="concat", choices=['concat', 'extra_linear'], type=str)
+
     parser.add_argument('--n-jobs', default=12, help='number of parallel jobs for classification (related to mesh/mag metrics)', type=int)
     parser.add_argument('--cuda-device', default=-1, help='specify if you want to use gpu for training the recommendation model; -1 means use cpu')
     parser.add_argument('--data-path', default=None, help='path to the data directory where scidocs files reside. If None, it will default to the `data/` directory')
@@ -29,6 +31,7 @@ def main():
         args.user_citation,
         args.recomm,
         val_or_test=args.val_or_test,
+        multifacet_behavior=args.multifacet_behavior,
         n_jobs=args.n_jobs,
         cuda_device=args.cuda_device
     )

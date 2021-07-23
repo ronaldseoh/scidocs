@@ -7,7 +7,7 @@ from collections import defaultdict
 from scidocs.embeddings import load_embeddings_from_jsonl
 
 
-def get_view_cite_read_metrics(data_paths, embeddings_path=None, val_or_test='test'):
+def get_view_cite_read_metrics(data_paths, embeddings_path=None, val_or_test='test', multifacet_behavior='concat'):
     """Run the cocite, coread, coview, cite task evaluations.
 
     Arguments:
