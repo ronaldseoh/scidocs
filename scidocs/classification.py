@@ -4,8 +4,10 @@ import numpy as np
 from collections import defaultdict
 from sklearn.metrics import f1_score
 from sklearn.model_selection import GridSearchCV
+from sklearn.pipeline import Pipeline
 from lightning.classification import LinearSVC
-from scidocs.embeddings import load_embeddings_from_jsonl
+from skorch import NeuralNetRegressor
+from scidocs.embeddings import load_embeddings_from_jsonl, SimpleNet
 
 
 np.random.seed(1)
@@ -15,7 +17,7 @@ def get_mag_mesh_metrics(data_paths, embeddings_path=None, val_or_test='test', m
     """Run MAG and MeSH tasks.
 
     Arguments:
-        data_paths {scidocs.paths.DataPaths} -- A DataPaths objects that points to 
+        data_paths {scidocs.paths.DataPaths} -- A DataPaths objects that points to
                                                 all of the SciDocs files
 
     Keyword Arguments:
@@ -27,44 +29,61 @@ def get_mag_mesh_metrics(data_paths, embeddings_path=None, val_or_test='test', m
         metrics {dict} -- F1 score for both tasks.
     """
     assert val_or_test in ('val', 'test'), "The val_or_test parameter must be one of 'val' or 'test'"
-    
+
     print('Loading MAG/MeSH embeddings...')
 
     embeddings = load_embeddings_from_jsonl(embeddings_path)
 
     print('Running the MAG task...')
 
-    X, y = get_X_y_for_classification(embeddings, data_paths.mag_train, data_paths.mag_val, data_paths.mag_test)
+    X, y, dim, num_facets = get_X_y_for_classification(embeddings, data_paths.mag_train, data_paths.mag_val, data_paths.mag_test)
 
-    mag_f1 = classify(X['train'], y['train'], X[val_or_test], y[val_or_test], multifacet_behavior=multifacet_behavior, n_jobs=n_jobs)
-    
+    mag_f1 = classify(X['train'], y['train'], X[val_or_test], y[val_or_test], dim=dim, num_facets=num_facets, multifacet_behavior=multifacet_behavior, n_jobs=n_jobs)
+
     print('Running the MeSH task...')
 
-    X, y = get_X_y_for_classification(embeddings, data_paths.mesh_train, data_paths.mesh_val, data_paths.mesh_test)
+    X, y, dim, num_facets = get_X_y_for_classification(embeddings, data_paths.mesh_train, data_paths.mesh_val, data_paths.mesh_test)
 
-    mesh_f1 = classify(X['train'], y['train'], X[val_or_test], y[val_or_test], multifacet_behavior=multifacet_behavior, n_jobs=n_jobs)
+    mesh_f1 = classify(X['train'], y['train'], X[val_or_test], y[val_or_test], dim=dim, num_facets=num_facets, multifacet_behavior=multifacet_behavior, n_jobs=n_jobs)
 
     return {'mag': {'f1': mag_f1}, 'mesh': {'f1': mesh_f1}}
 
 
-def classify(X_train, y_train, X_test, y_test, multifacet_behavior, n_jobs=1):
+def classify(X_train, y_train, X_test, y_test, dim, num_facets, multifacet_behavior, n_jobs=1):
     """
     Simple classification methods using sklearn framework.
     Selection of C happens inside of X_train, y_train via
-    cross-validation. 
-    
+    cross-validation.
+
     Arguments:
         X_train, y_train -- training data
         X_test, y_test -- test data to evaluate on (can also be validation data)
 
-    Returns: 
+    Returns:
         F1 on X_test, y_test (out of 100), rounded to two decimal places
     """
-    estimator = LinearSVC(loss="squared_hinge", random_state=42)
+
+    model = LinearSVC(loss="squared_hinge", random_state=42)
     Cs = np.logspace(-4, 2, 7)
-    svm = GridSearchCV(estimator=estimator, cv=3, param_grid={'C': Cs}, verbose=1, n_jobs=n_jobs)
-    svm.fit(X_train, y_train)
-    preds = svm.predict(X_test)
+
+    if multifacet_behavior == 'extra_linear':
+        # Instantiate a PyTorch NN module using skorch
+        nn = NeuralNetRegressor(
+            SimpleNet,
+            module__input_dim=num_facets*dim, module__hidden_size=dim, module__output_dim=dim)
+        
+        model = sklearn.pipeline.Pipeline([('nn_linear', nn), ('estimator', model)])
+
+        grid_params = {'estimator__C': Cs}
+    else:
+        grid_params = {'C': Cs}
+
+    model = GridSearchCV(estimator=model, cv=3, param_grid=grid_params, verbose=1, n_jobs=n_jobs)
+
+    model.fit(X_train, y_train)
+
+    preds = model.predict(X_test)
+
     return np.round(100 * f1_score(y_test, preds, average='macro'), 2)
 
 
@@ -104,4 +123,4 @@ def get_X_y_for_classification(embeddings, train_path, val_path, test_path):
         X[dataset_name] = np.array(X[dataset_name])
         y[dataset_name] = np.array(y[dataset_name])
 
-    return X, y
+    return X, y, dim, num_facets
