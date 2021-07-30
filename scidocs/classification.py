@@ -73,7 +73,7 @@ def classify(X_train, y_train, X_test, y_test, dim, num_facets, multifacet_behav
             max_epochs=10,
             module__input_dim=num_facets*dim, module__hidden_size=dim, module__output_dim=dim)
         
-        model = sklearn.pipeline.Pipeline([('nn_linear', nn), ('estimator', model)])
+        model = Pipeline([('nn_linear', nn), ('estimator', model)])
 
         grid_params = {
             'nn_linear__lr': [0.01, 0.02],
