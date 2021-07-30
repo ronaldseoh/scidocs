@@ -65,7 +65,7 @@ def load_embeddings_from_jsonl(embeddings_path):
 
     Returns:
         embeddings -- a dictionary where each key is the paper id
-                                   and the value is a numpy array 
+                                   and the value is a numpy array
     """
     embeddings = {}
     with open(embeddings_path, 'r') as f:
