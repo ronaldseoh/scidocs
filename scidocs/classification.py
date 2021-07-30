@@ -70,11 +70,14 @@ def classify(X_train, y_train, X_test, y_test, dim, num_facets, multifacet_behav
         # Instantiate a PyTorch NN module using skorch
         nn = NeuralNetRegressor(
             SimpleNet,
+            max_epochs=10,
             module__input_dim=num_facets*dim, module__hidden_size=dim, module__output_dim=dim)
         
         model = sklearn.pipeline.Pipeline([('nn_linear', nn), ('estimator', model)])
 
-        grid_params = {'estimator__C': Cs}
+        grid_params = {
+            'nn_linear__lr': [0.01, 0.02],
+            'estimator__C': Cs}
     else:
         grid_params = {'C': Cs}
 
