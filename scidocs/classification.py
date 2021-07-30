@@ -29,20 +29,27 @@ def get_mag_mesh_metrics(data_paths, embeddings_path=None, val_or_test='test', m
     assert val_or_test in ('val', 'test'), "The val_or_test parameter must be one of 'val' or 'test'"
     
     print('Loading MAG/MeSH embeddings...')
+
     embeddings = load_embeddings_from_jsonl(embeddings_path)
 
     print('Running the MAG task...')
-    X, y = get_X_y_for_classification(embeddings, data_paths.mag_train, data_paths.mag_val, data_paths.mag_test)
-    mag_f1 = classify(X['train'], y['train'], X[val_or_test], y[val_or_test], n_jobs=n_jobs)
+
+    X, y = get_X_y_for_classification(
+        embeddings, data_paths.mag_train, data_paths.mag_val, data_paths.mag_test, multifacet_behavior=multifacet_behavior)
+
+    mag_f1 = classify(X['train'], y['train'], X[val_or_test], y[val_or_test], multifacet_behavior=multifacet_behavior, n_jobs=n_jobs)
     
     print('Running the MeSH task...')
-    X, y = get_X_y_for_classification(embeddings, data_paths.mesh_train, data_paths.mesh_val, data_paths.mesh_test)
-    mesh_f1 = classify(X['train'], y['train'], X[val_or_test], y[val_or_test], n_jobs=n_jobs)
+
+    X, y = get_X_y_for_classification(
+        embeddings, data_paths.mesh_train, data_paths.mesh_val, data_paths.mesh_test, multifacet_behavior=multifacet_behavior)
+
+    mesh_f1 = classify(X['train'], y['train'], X[val_or_test], y[val_or_test], multifacet_behavior=multifacet_behavior, n_jobs=n_jobs)
 
     return {'mag': {'f1': mag_f1}, 'mesh': {'f1': mesh_f1}}
 
 
-def classify(X_train, y_train, X_test, y_test, n_jobs=1):
+def classify(X_train, y_train, X_test, y_test, multifacet_behavior, n_jobs=1):
     """
     Simple classification methods using sklearn framework.
     Selection of C happens inside of X_train, y_train via
@@ -63,7 +70,7 @@ def classify(X_train, y_train, X_test, y_test, n_jobs=1):
     return np.round(100 * f1_score(y_test, preds, average='macro'), 2)
 
 
-def get_X_y_for_classification(embeddings, train_path, val_path, test_path):
+def get_X_y_for_classification(embeddings, train_path, val_path, test_path, multifacet_behavior):
     """
     Given the directory with train/test/val files for mesh classification
         and embeddings, return data as X, y pair
@@ -90,10 +97,19 @@ def get_X_y_for_classification(embeddings, train_path, val_path, test_path):
     for dataset_name, dataset in zip(['train', 'val', 'test'], [train, val, test]):
         for s2id, class_label in dataset.values:
             if s2id not in embeddings:
-                X[dataset_name].append(np.zeros(dim * num_facets))
+                if multifacet_behavior == 'extra_linear':
+                    X[dataset_name].append(np.zeros((dim, num_facets)))
+                else:
+                    X[dataset_name].append(np.zeros(dim * num_facets))
             else:
-                X[dataset_name].append(embeddings[s2id].flatten())
+                if multifacet_behavior == 'extra_linear':
+                    X[dataset_name].append(embeddings[s2id])
+                else:
+                    X[dataset_name].append(embeddings[s2id].flatten())
+
             y[dataset_name].append(class_label)
+
         X[dataset_name] = np.array(X[dataset_name])
         y[dataset_name] = np.array(y[dataset_name])
+
     return X, y
