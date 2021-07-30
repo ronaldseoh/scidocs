@@ -6,7 +6,7 @@ from tqdm import tqdm
 
 class SimpleNet(torch.nn.Module):
 
-    def __init__(self, input_dim, output_dim, hidden_dim, n_hidden, dropout_rate):
+    def __init__(self, input_dim, output_dim, hidden_dim, n_hidden=0, dropout_rate=0.5):
         super(SimpleNet, self).__init__()
 
         # Setup layers
