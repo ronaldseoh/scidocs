@@ -31,28 +31,28 @@ def get_view_cite_read_metrics(data_paths, embeddings_path=None, val_or_test='te
 
     print('Running the co-view, co-read, cite, and co-cite tasks...')
     if val_or_test == 'test':
-        make_run_from_embeddings(data_paths.coview_test, embeddings, run_path, topk=5, generate_random_embeddings=False)
+        make_run_from_embeddings(data_paths.coview_test, embeddings, run_path, topk=5, multifacet_behavior=multifacet_behavior, generate_random_embeddings=False)
         coview_results = qrel_metrics(data_paths.coview_test, run_path, metrics=('ndcg', 'map'))
 
-        make_run_from_embeddings(data_paths.coread_test, embeddings, run_path, topk=5, generate_random_embeddings=False)
+        make_run_from_embeddings(data_paths.coread_test, embeddings, run_path, topk=5, multifacet_behavior=multifacet_behavior, generate_random_embeddings=False)
         coread_results = qrel_metrics(data_paths.coread_test, run_path, metrics=('ndcg', 'map'))
 
-        make_run_from_embeddings(data_paths.cite_test, embeddings, run_path, topk=5, generate_random_embeddings=False)
+        make_run_from_embeddings(data_paths.cite_test, embeddings, run_path, topk=5, multifacet_behavior=multifacet_behavior,  generate_random_embeddings=False)
         cite_results = qrel_metrics(data_paths.cite_test, run_path, metrics=('ndcg', 'map'))
 
-        make_run_from_embeddings(data_paths.cocite_test, embeddings, run_path, topk=5, generate_random_embeddings=False)
+        make_run_from_embeddings(data_paths.cocite_test, embeddings, run_path, topk=5, multifacet_behavior=multifacet_behavior, generate_random_embeddings=False)
         cocite_results = qrel_metrics(data_paths.cocite_test, run_path, metrics=('ndcg', 'map'))
     elif val_or_test == 'val':
-        make_run_from_embeddings(data_paths.coview_val, embeddings, run_path, topk=5, generate_random_embeddings=False)
+        make_run_from_embeddings(data_paths.coview_val, embeddings, run_path, topk=5, multifacet_behavior=multifacet_behavior, generate_random_embeddings=False)
         coview_results = qrel_metrics(data_paths.coview_val, run_path, metrics=('ndcg', 'map'))
 
-        make_run_from_embeddings(data_paths.coread_val, embeddings, run_path, topk=5, generate_random_embeddings=False)
+        make_run_from_embeddings(data_paths.coread_val, embeddings, run_path, topk=5, multifacet_behavior=multifacet_behavior, generate_random_embeddings=False)
         coread_results = qrel_metrics(data_paths.coread_val, run_path, metrics=('ndcg', 'map'))
 
-        make_run_from_embeddings(data_paths.cite_val, embeddings, run_path, topk=5, generate_random_embeddings=False)
+        make_run_from_embeddings(data_paths.cite_val, embeddings, run_path, topk=5, multifacet_behavior=multifacet_behavior, generate_random_embeddings=False)
         cite_results = qrel_metrics(data_paths.cite_val, run_path, metrics=('ndcg', 'map'))
 
-        make_run_from_embeddings(data_paths.cocite_val, embeddings, run_path, topk=5, generate_random_embeddings=False)
+        make_run_from_embeddings(data_paths.cocite_val, embeddings, run_path, topk=5, multifacet_behavior=multifacet_behavior, generate_random_embeddings=False)
         cocite_results = qrel_metrics(data_paths.cocite_val, run_path, metrics=('ndcg', 'map'))
     
     return {'co-view': coview_results, 'co-read': coread_results, 'cite': cite_results, 'co-cite': cocite_results}
@@ -89,7 +89,7 @@ def qrel_metrics(qrel_file, run_file, metrics=('ndcg', 'map')):
     return metric_values
 
 
-def make_run_from_embeddings(qrel_file, embeddings, run_file, topk=5, generate_random_embeddings=False):
+def make_run_from_embeddings(qrel_file, embeddings, run_file, topk=5, multifacet_behavior='concat', generate_random_embeddings=False):
     """Given embeddings and a qrel file, construct a run file.
 
     Arguments:
