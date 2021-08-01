@@ -121,7 +121,7 @@ def get_recomm_metrics(data_paths:DataPaths, embeddings_path, val_or_test='test'
     """Run the recommendations task evaluation.
 
     Arguments:
-        data_paths {scidocs.paths.DataPaths} -- A DataPaths objects that points to 
+        data_paths {scidocs.paths.DataPaths} -- A DataPaths objects that points to
                                                 all of the SciDocs files
         embeddings_path {str} -- Path to the embeddings jsonl
 
@@ -135,7 +135,7 @@ def get_recomm_metrics(data_paths:DataPaths, embeddings_path, val_or_test='test'
     """
     assert val_or_test in ('val', 'test'), "The val_or_test parameter must be one of 'val' or 'test'"
     # TODO(dougd): return validation metrics of val_or_test == 'val'
-    
+
     print('Loading recomm embeddings...')
     with open(embeddings_path, 'r') as f:
         line = json.loads(next(f))
@@ -173,6 +173,6 @@ def get_recomm_metrics(data_paths:DataPaths, embeddings_path, val_or_test='test'
     metrics = evaluate_ranking_performance(simpapers_model_path, data_paths.recomm_test if val_or_test=='test'
        else data_paths.recomm_val, int(cuda_device))
     return {'recomm': {
-        'adj-NDCG': np.round(100 * float(metrics['Adj-ndcg']), 2), 
+        'adj-NDCG': np.round(100 * float(metrics['Adj-ndcg']), 2),
         'adj-P@1': np.round(100 * float(metrics['Adj-Rprec/P@1']), 2),
         }}
