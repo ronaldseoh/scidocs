@@ -1,4 +1,5 @@
 from typing import Dict, Union, Optional
+import os
 
 import torch
 
@@ -41,6 +42,9 @@ class SimpaperRecommender(Model):
             self.dropout = nn.Dropout(p=paper_to_vec_dropout)
         else:
             self.dropout = None
+
+        if os.environ.get('NUM_FACETS', False):
+            self.merge_facets = nn.Linear(int(os.environ.get('NUM_FACETS')) * paper_embeddings_size, paper_embeddings_size)
 
         self.project_query = project_query
         if project_query:
@@ -157,6 +161,12 @@ class SimpaperRecommender(Model):
                 neg_paper_encoding = self._paper_to_vec(neg_title["tokens"])
                 check_dimensions_match(neg_paper_encoding.size(), (batch_size, self.total_paper_output_size),
                                        "Negative paper encoding size", "Expected paper encoding size")
+
+        # If 'num_facets' environment variable is specified, use the extra linear layer (self.merge_facets)
+        # to 'merge' all the facet embeddings to single embedding dimension
+        if hasattr(self, 'merge_facets'):
+            query_emb = self.merge_facets(query_emb)
+
         #pos_features holds additional features about this instance, is (batch size x num_extra_numeric_features)
         if self.project_query:
             proj_query_emb = self.query_projection(query_emb)
