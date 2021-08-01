@@ -6,7 +6,7 @@ from sklearn.metrics import f1_score
 from sklearn.model_selection import GridSearchCV
 from sklearn.pipeline import Pipeline
 from lightning.classification import LinearSVC
-from skorch import NeuralNetRegressor
+from sklearn.neural_network import MLPRegressor
 from scidocs.embeddings import load_embeddings_from_jsonl, SimpleNet
 
 
@@ -67,16 +67,14 @@ def classify(X_train, y_train, X_test, y_test, dim, num_facets, multifacet_behav
     Cs = np.logspace(-4, 2, 7)
 
     if multifacet_behavior == 'extra_linear':
-        # Instantiate a PyTorch NN module using skorch
-        nn = NeuralNetRegressor(
-            SimpleNet,
-            max_epochs=10,
-            module__input_dim=num_facets*dim, module__hidden_size=dim, module__output_dim=dim)
+        # Instantiate a PyTorch NN module using scikit-learn's MLPRegressor
+        nn = MLPRegressor(
+            hidden_layer_sizes=dim, activation='identity', random_state=42, verbose=True)
         
         model = Pipeline([('nn_linear', nn), ('estimator', model)])
 
         grid_params = {
-            'nn_linear__lr': [0.01, 0.02],
+            'nn_linear__learning_rate': [0.01, 0.02],
             'estimator__C': Cs}
     else:
         grid_params = {'C': Cs}
