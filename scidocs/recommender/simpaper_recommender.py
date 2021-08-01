@@ -166,6 +166,10 @@ class SimpaperRecommender(Model):
         # to 'merge' all the facet embeddings to single embedding dimension
         if hasattr(self, 'merge_facets'):
             query_emb = self.merge_facets(query_emb)
+            pos_emb = self.merge_facets(pos_emb)
+
+            if neg_emb:
+                neg_emb = self.merge_facets(neg_emb)
 
         #pos_features holds additional features about this instance, is (batch size x num_extra_numeric_features)
         if self.project_query:
