@@ -127,7 +127,10 @@ def make_run_from_embeddings(qrel_file, embeddings, run_file, topk=5, multifacet
             if generate_random_embeddings:
                 emb_query = np.random.normal(0, 0.67, 200)
             else:
-                emb_query = embeddings[pid].flatten()
+                if multifacet_behavior == 'extra_linear':
+                    emb_query = embeddings[pid]
+                else:
+                    emb_query = embeddings[pid].flatten()
         except KeyError:
             missing_queries += 1
             continue
@@ -142,7 +145,10 @@ def make_run_from_embeddings(qrel_file, embeddings, run_file, topk=5, multifacet
                 if generate_random_embeddings:
                     emb_candidates.append(np.random.normal(0, 0.67, 200))
                 else:
-                    emb_candidates.append(embeddings[paper_id].flatten())
+                    if multifacet_behavior == 'extra_linear':
+                        emb_candidates.append(embeddings[paper_id])
+                    else:
+                        emb_candidates.append(embeddings[paper_id].flatten())
                 candidate_ids.append(paper_id)
                 success_candidates += 1
             except KeyError:
@@ -153,9 +159,14 @@ def make_run_from_embeddings(qrel_file, embeddings, run_file, topk=5, multifacet
 
         # trec_eval assumes higher scores are more relevant
         # here the closer distance means higher relevance; therefore, we multiply distances by -1
-        distances = [-np.linalg.norm(emb_query - np.array(e))
-                     if len(e) > 0 else float("-inf")
-                     for e in emb_candidates]
+        if multifacet_behavior == 'extra_linear':
+            distances = [-np.min([np.linalg.norm(emb_query[facet_query] - e[facet_candidate]) for facet_candidate in range(len(e)) for facet_query in range(len(emb_query))])
+                        if len(e) > 0 else float("-inf")
+                        for e in emb_candidates]
+        else:
+            distances = [-np.linalg.norm(emb_query - np.array(e))
+                        if len(e) > 0 else float("-inf")
+                        for e in emb_candidates]
 
         distance_with_ids = list(zip(candidate_ids, distances))
 
