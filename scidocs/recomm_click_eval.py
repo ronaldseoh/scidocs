@@ -143,6 +143,7 @@ def get_recomm_metrics(data_paths:DataPaths, embeddings_path, val_or_test='test'
         if multifacet_behavior == 'extra_linear':
             num_facets = len(line['embedding'])
             num_dims = len(line['embedding'][0])
+            os.environ['NUM_FACETS'] = str(num_facets)
         else:
             num_dims = len(line['embedding'][0]) * len(line['embedding'])
 
@@ -151,7 +152,6 @@ def get_recomm_metrics(data_paths:DataPaths, embeddings_path, val_or_test='test'
     os.environ['CUDA_DEVICE'] = str(cuda_device)
     os.environ['EMBEDDINGS_PATH'] = embeddings_path
     os.environ['EMBEDDINGS_DIM'] = str(num_dims)
-    os.environ['NUM_FACETS'] = str(num_facets)
     os.environ['TRAIN_PATH'] = data_paths.recomm_train
     os.environ['VALID_PATH'] = data_paths.recomm_val
     if val_or_test == 'test':
