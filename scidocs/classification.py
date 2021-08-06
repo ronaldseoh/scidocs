@@ -13,7 +13,7 @@ from scidocs.embeddings import load_embeddings_from_jsonl, SimpleNet
 np.random.seed(1)
 
 
-def get_mag_mesh_metrics(data_paths, embeddings_path=None, val_or_test='test', multifacet_behavior='concat', n_jobs=1):
+def get_mag_mesh_metrics(data_paths, embeddings_path=None, val_or_test='test', multifacet_behavior='concat', cls_svm=False, n_jobs=1):
     """Run MAG and MeSH tasks.
 
     Arguments:
@@ -38,18 +38,18 @@ def get_mag_mesh_metrics(data_paths, embeddings_path=None, val_or_test='test', m
 
     X, y, dim, num_facets = get_X_y_for_classification(embeddings, data_paths.mag_train, data_paths.mag_val, data_paths.mag_test)
 
-    mag_f1 = classify(X['train'], y['train'], X[val_or_test], y[val_or_test], dim=dim, num_facets=num_facets, multifacet_behavior=multifacet_behavior, n_jobs=n_jobs)
+    mag_f1 = classify(X['train'], y['train'], X[val_or_test], y[val_or_test], dim=dim, num_facets=num_facets, multifacet_behavior=multifacet_behavior, cls_svm=cls_svm, n_jobs=n_jobs)
 
     print('Running the MeSH task...')
 
     X, y, dim, num_facets = get_X_y_for_classification(embeddings, data_paths.mesh_train, data_paths.mesh_val, data_paths.mesh_test)
 
-    mesh_f1 = classify(X['train'], y['train'], X[val_or_test], y[val_or_test], dim=dim, num_facets=num_facets, multifacet_behavior=multifacet_behavior, n_jobs=n_jobs)
+    mesh_f1 = classify(X['train'], y['train'], X[val_or_test], y[val_or_test], dim=dim, num_facets=num_facets, multifacet_behavior=multifacet_behavior, cls_svm=cls_svm, n_jobs=n_jobs)
 
     return {'mag': {'f1': mag_f1}, 'mesh': {'f1': mesh_f1}}
 
 
-def classify(X_train, y_train, X_test, y_test, dim, num_facets, multifacet_behavior, n_jobs=1):
+def classify(X_train, y_train, X_test, y_test, dim, num_facets, multifacet_behavior, cls_svm, n_jobs=1):
     """
     Simple classification methods using sklearn framework.
     Selection of C happens inside of X_train, y_train via
@@ -63,12 +63,23 @@ def classify(X_train, y_train, X_test, y_test, dim, num_facets, multifacet_behav
         F1 on X_test, y_test (out of 100), rounded to two decimal places
     """
 
-    # Instantiate a simple feedforward network using scikit-learn's MLPRegressor
-    nn = MLPClassifier(hidden_layer_sizes=(dim,), solver='lbfgs', random_state=42, max_iter=500, verbose=True)
+    if cls_svm:
+        estimator = LinearSVC(loss="squared_hinge", random_state=42)
 
-    nn.fit(X_train, y_train)
+        Cs = np.logspace(-4, 2, 7)
 
-    preds = nn.predict(X_test)
+        svm = GridSearchCV(estimator=estimator, cv=3, param_grid={'C': Cs}, verbose=1, n_jobs=n_jobs)
+
+        svm.fit(X_train, y_train)
+
+        preds = svm.predict(X_test)
+    else:
+        # Instantiate a simple feedforward network using scikit-learn's MLPRegressor
+        nn = MLPClassifier(hidden_layer_sizes=(dim,), solver='lbfgs', random_state=42, max_iter=500, verbose=True)
+
+        nn.fit(X_train, y_train)
+
+        preds = nn.predict(X_test)
 
     return np.round(100 * f1_score(y_test, preds, average='macro'), 2)
 

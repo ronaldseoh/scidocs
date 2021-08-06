@@ -9,6 +9,7 @@ def get_scidocs_metrics(data_paths,
                         recomm_embeddings_path,
                         val_or_test='test',
                         multifacet_behavior='concat',
+                        cls_svm=False,
                         n_jobs=-1,
                         cuda_device=-1):
     """This is the master wrapper that computes the SciDocs metrics given
@@ -39,7 +40,7 @@ def get_scidocs_metrics(data_paths,
     scidocs_metrics = {}
 
     scidocs_metrics.update(
-        get_mag_mesh_metrics(data_paths, classification_embeddings_path, val_or_test=val_or_test, multifacet_behavior=multifacet_behavior, n_jobs=n_jobs)
+        get_mag_mesh_metrics(data_paths, classification_embeddings_path, val_or_test=val_or_test, multifacet_behavior=multifacet_behavior, cls_svm=cls_svm, n_jobs=n_jobs)
     )
 
     scidocs_metrics.update(
