@@ -36,13 +36,13 @@ def get_mag_mesh_metrics(data_paths, embeddings_path=None, val_or_test='test', m
 
     print('Running the MAG task...')
 
-    X, y, dim, num_facets = get_X_y_for_classification(embeddings, data_paths.mag_train, data_paths.mag_val, data_paths.mag_test)
+    X, y, dim, num_facets = get_X_y_for_classification(embeddings, data_paths.mag_train, data_paths.mag_val, data_paths.mag_test, multifacet_behavior=multifacet_behavior)
 
     mag_f1 = classify(X['train'], y['train'], X[val_or_test], y[val_or_test], dim=dim, num_facets=num_facets, multifacet_behavior=multifacet_behavior, cls_svm=cls_svm, n_jobs=n_jobs)
 
     print('Running the MeSH task...')
 
-    X, y, dim, num_facets = get_X_y_for_classification(embeddings, data_paths.mesh_train, data_paths.mesh_val, data_paths.mesh_test)
+    X, y, dim, num_facets = get_X_y_for_classification(embeddings, data_paths.mesh_train, data_paths.mesh_val, data_paths.mesh_test, multifacet_behavior=multifacet_behavior)
 
     mesh_f1 = classify(X['train'], y['train'], X[val_or_test], y[val_or_test], dim=dim, num_facets=num_facets, multifacet_behavior=multifacet_behavior, cls_svm=cls_svm, n_jobs=n_jobs)
 
@@ -84,7 +84,7 @@ def classify(X_train, y_train, X_test, y_test, dim, num_facets, multifacet_behav
     return np.round(100 * f1_score(y_test, preds, average='macro'), 2)
 
 
-def get_X_y_for_classification(embeddings, train_path, val_path, test_path):
+def get_X_y_for_classification(embeddings, train_path, val_path, test_path, multifacet_behavior):
     """
     Given the directory with train/test/val files for mesh classification
         and embeddings, return data as X, y pair
@@ -110,10 +110,16 @@ def get_X_y_for_classification(embeddings, train_path, val_path, test_path):
 
     for dataset_name, dataset in zip(['train', 'val', 'test'], [train, val, test]):
         for s2id, class_label in dataset.values:
-            if s2id not in embeddings:
-                X[dataset_name].append(np.zeros(dim * num_facets))
-            else:
-                X[dataset_name].append(embeddings[s2id].flatten())
+            if multifacet_behavior == "concat":
+                if s2id not in embeddings:
+                    X[dataset_name].append(np.zeros(dim * num_facets))
+                else:
+                    X[dataset_name].append(embeddings[s2id].flatten())
+            elif multifacet_behavior == "extra_linear":
+                if s2id not in embeddings:
+                    X[dataset_name].append(np.zeros(dim, num_facets))
+                else:
+                    X[dataset_name].append(embeddings[s2id])
 
             y[dataset_name].append(class_label)
 
