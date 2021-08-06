@@ -64,7 +64,7 @@ def classify(X_train, y_train, X_test, y_test, dim, num_facets, multifacet_behav
     """
 
     # Instantiate a simple feedforward network using scikit-learn's MLPRegressor
-    nn = MLPClassifier(hidden_layer_sizes=(dim,), solver='lbfgs', random_state=42, verbose=True)
+    nn = MLPClassifier(hidden_layer_sizes=(dim,), solver='lbfgs', random_state=42, max_iter=500, verbose=True)
 
     nn.fit(X_train, y_train)
 
