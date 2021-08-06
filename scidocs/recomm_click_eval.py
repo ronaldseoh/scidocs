@@ -4,6 +4,7 @@ import math
 import torch
 import os
 import subprocess
+import hashlib
 import numpy as np
 
 from allennlp.data.dataset_readers.dataset_reader import DatasetReader
@@ -140,12 +141,13 @@ def get_recomm_metrics(data_paths:DataPaths, embeddings_path, val_or_test='test'
     with open(embeddings_path, 'r') as f:
         line = json.loads(next(f))
 
+        num_facets = len(line['embedding'])
+        num_dims = len(line['embedding'][0])
+
         if multifacet_behavior == 'extra_linear':
-            num_facets = len(line['embedding'])
-            num_dims = len(line['embedding'][0])
             os.environ['NUM_FACETS'] = str(num_facets)
         else:
-            num_dims = len(line['embedding'][0]) * len(line['embedding'])
+            num_dims = num_dims * num_facets
 
     print('Running the recomm task...')
     config_path = data_paths.recomm_config
@@ -162,7 +164,11 @@ def get_recomm_metrics(data_paths:DataPaths, embeddings_path, val_or_test='test'
     os.environ['PROP_SCORE_PATH'] = data_paths.recomm_propensity_scores
     os.environ['PAPER_METADATA_PATH'] = data_paths.paper_metadata_recomm
     os.environ['jsonlines_embedding_format'] = "true"
-    serialization_dir = os.path.join(data_paths.base_path, "recomm-tmp")
+
+    serialization_dir = os.path.join
+        data_paths.base_path, "recomm-tmp", str(num_facets),
+        hashlib.sha256(str.encode(embeddings_path)).hexdigest())
+
     simpapers_model_path = os.path.join(serialization_dir, "model.tar.gz")
     shutil.rmtree(serialization_dir, ignore_errors=True)
     command = \
