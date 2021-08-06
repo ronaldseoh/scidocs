@@ -75,7 +75,12 @@ def classify(X_train, y_train, X_test, y_test, dim, num_facets, multifacet_behav
         preds = svm.predict(X_test)
     else:
         # Instantiate a simple feedforward network using scikit-learn's MLPRegressor
-        nn = MLPClassifier(hidden_layer_sizes=(dim,), solver='lbfgs', random_state=42, max_iter=3000, verbose=True)
+        if multifacet_behavior == 'extra_linear':
+            hidden_layer_sizes = (dim,)
+        else:
+            hidden_layer_sizes = ()
+
+        nn = MLPClassifier(hidden_layer_sizes=hidden_layer_sizes, solver='lbfgs', random_state=42, max_iter=3000, verbose=True)
 
         nn.fit(X_train, y_train)
 
