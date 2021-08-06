@@ -165,7 +165,7 @@ def get_recomm_metrics(data_paths:DataPaths, embeddings_path, val_or_test='test'
     os.environ['PAPER_METADATA_PATH'] = data_paths.paper_metadata_recomm
     os.environ['jsonlines_embedding_format'] = "true"
 
-    serialization_dir = os.path.join
+    serialization_dir = os.path.join(
         data_paths.base_path, "recomm-tmp", str(num_facets),
         hashlib.sha256(str.encode(embeddings_path)).hexdigest())
 
