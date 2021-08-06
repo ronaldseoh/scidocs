@@ -6,7 +6,7 @@ from sklearn.metrics import f1_score
 from sklearn.model_selection import GridSearchCV
 from sklearn.pipeline import Pipeline
 from lightning.classification import LinearSVC
-from sklearn.neural_network import MLPRegressor
+from sklearn.neural_network import MLPClassifier
 from scidocs.embeddings import load_embeddings_from_jsonl, SimpleNet
 
 
@@ -63,27 +63,12 @@ def classify(X_train, y_train, X_test, y_test, dim, num_facets, multifacet_behav
         F1 on X_test, y_test (out of 100), rounded to two decimal places
     """
 
-    model = LinearSVC(loss="squared_hinge", random_state=42)
-    Cs = np.logspace(-4, 2, 7)
+    # Instantiate a simple feedforward network using scikit-learn's MLPRegressor
+    nn = MLPClassifier(hidden_layer_sizes=(dim,), solver='lbfgs', random_state=42, verbose=True)
 
-    if multifacet_behavior == 'extra_linear':
-        # Instantiate a PyTorch NN module using scikit-learn's MLPRegressor
-        nn = MLPRegressor(
-            hidden_layer_sizes=dim, activation='identity', random_state=42, verbose=True)
-        
-        model = Pipeline([('nn_linear', nn), ('estimator', model)])
+    nn.fit(X_train, y_train)
 
-        grid_params = {
-            'nn_linear__learning_rate': [0.01, 0.02],
-            'estimator__C': Cs}
-    else:
-        grid_params = {'C': Cs}
-
-    model = GridSearchCV(estimator=model, cv=3, param_grid=grid_params, verbose=1, n_jobs=n_jobs)
-
-    model.fit(X_train, y_train)
-
-    preds = model.predict(X_test)
+    preds = nn.predict(X_test)
 
     return np.round(100 * f1_score(y_test, preds, average='macro'), 2)
 
