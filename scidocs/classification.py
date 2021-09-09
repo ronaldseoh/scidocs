@@ -7,7 +7,7 @@ from sklearn.model_selection import GridSearchCV
 from sklearn.pipeline import Pipeline
 from lightning.classification import LinearSVC
 from sklearn.neural_network import MLPClassifier
-from scidocs.embeddings import load_embeddings_from_jsonl, SimpleNet
+from scidocs.embeddings import load_embeddings_from_jsonl
 
 
 np.random.seed(1)
