@@ -8,7 +8,8 @@ from sklearn.preprocessing import normalize
 from scidocs.embeddings import load_embeddings_from_jsonl
 
 
-def get_view_cite_read_metrics(data_paths, embeddings_path=None, val_or_test='test', multifacet_behavior='concat', user_citation_normalize=False):
+def get_view_cite_read_metrics(data_paths, embeddings_path=None, val_or_test='test', multifacet_behavior='concat',
+                               user_citation_normalize=False, user_citation_metric="l2"):
     """Run the cocite, coread, coview, cite task evaluations.
 
     Arguments:
@@ -32,28 +33,28 @@ def get_view_cite_read_metrics(data_paths, embeddings_path=None, val_or_test='te
 
     print('Running the co-view, co-read, cite, and co-cite tasks...')
     if val_or_test == 'test':
-        make_run_from_embeddings(data_paths.coview_test, embeddings, run_path, topk=5, multifacet_behavior=multifacet_behavior, user_citation_normalize=user_citation_normalize, generate_random_embeddings=False)
+        make_run_from_embeddings(data_paths.coview_test, embeddings, run_path, topk=5, multifacet_behavior=multifacet_behavior, user_citation_normalize=user_citation_normalize, user_citation_metric=user_citation_metric, generate_random_embeddings=False)
         coview_results = qrel_metrics(data_paths.coview_test, run_path, metrics=('ndcg', 'map'))
 
-        make_run_from_embeddings(data_paths.coread_test, embeddings, run_path, topk=5, multifacet_behavior=multifacet_behavior, user_citation_normalize=user_citation_normalize, generate_random_embeddings=False)
+        make_run_from_embeddings(data_paths.coread_test, embeddings, run_path, topk=5, multifacet_behavior=multifacet_behavior, user_citation_normalize=user_citation_normalize, user_citation_metric=user_citation_metric, generate_random_embeddings=False)
         coread_results = qrel_metrics(data_paths.coread_test, run_path, metrics=('ndcg', 'map'))
 
-        make_run_from_embeddings(data_paths.cite_test, embeddings, run_path, topk=5, multifacet_behavior=multifacet_behavior,  user_citation_normalize=user_citation_normalize, generate_random_embeddings=False)
+        make_run_from_embeddings(data_paths.cite_test, embeddings, run_path, topk=5, multifacet_behavior=multifacet_behavior,  user_citation_normalize=user_citation_normalize, user_citation_metric=user_citation_metric, generate_random_embeddings=False)
         cite_results = qrel_metrics(data_paths.cite_test, run_path, metrics=('ndcg', 'map'))
 
-        make_run_from_embeddings(data_paths.cocite_test, embeddings, run_path, topk=5, multifacet_behavior=multifacet_behavior, user_citation_normalize=user_citation_normalize, generate_random_embeddings=False)
+        make_run_from_embeddings(data_paths.cocite_test, embeddings, run_path, topk=5, multifacet_behavior=multifacet_behavior, user_citation_normalize=user_citation_normalize, user_citation_metric=user_citation_metric, generate_random_embeddings=False)
         cocite_results = qrel_metrics(data_paths.cocite_test, run_path, metrics=('ndcg', 'map'))
     elif val_or_test == 'val':
-        make_run_from_embeddings(data_paths.coview_val, embeddings, run_path, topk=5, multifacet_behavior=multifacet_behavior, user_citation_normalize=user_citation_normalize, generate_random_embeddings=False)
+        make_run_from_embeddings(data_paths.coview_val, embeddings, run_path, topk=5, multifacet_behavior=multifacet_behavior, user_citation_normalize=user_citation_normalize, user_citation_metric=user_citation_metric, generate_random_embeddings=False)
         coview_results = qrel_metrics(data_paths.coview_val, run_path, metrics=('ndcg', 'map'))
 
-        make_run_from_embeddings(data_paths.coread_val, embeddings, run_path, topk=5, multifacet_behavior=multifacet_behavior, user_citation_normalize=user_citation_normalize, generate_random_embeddings=False)
+        make_run_from_embeddings(data_paths.coread_val, embeddings, run_path, topk=5, multifacet_behavior=multifacet_behavior, user_citation_normalize=user_citation_normalize, user_citation_metric=user_citation_metric, generate_random_embeddings=False)
         coread_results = qrel_metrics(data_paths.coread_val, run_path, metrics=('ndcg', 'map'))
 
-        make_run_from_embeddings(data_paths.cite_val, embeddings, run_path, topk=5, multifacet_behavior=multifacet_behavior, user_citation_normalize=user_citation_normalize, generate_random_embeddings=False)
+        make_run_from_embeddings(data_paths.cite_val, embeddings, run_path, topk=5, multifacet_behavior=multifacet_behavior, user_citation_normalize=user_citation_normalize, user_citation_metric=user_citation_metric, generate_random_embeddings=False)
         cite_results = qrel_metrics(data_paths.cite_val, run_path, metrics=('ndcg', 'map'))
 
-        make_run_from_embeddings(data_paths.cocite_val, embeddings, run_path, topk=5, multifacet_behavior=multifacet_behavior, user_citation_normalize=user_citation_normalize, generate_random_embeddings=False)
+        make_run_from_embeddings(data_paths.cocite_val, embeddings, run_path, topk=5, multifacet_behavior=multifacet_behavior, user_citation_normalize=user_citation_normalize, user_citation_metric=user_citation_metric, generate_random_embeddings=False)
         cocite_results = qrel_metrics(data_paths.cocite_val, run_path, metrics=('ndcg', 'map'))
     
     return {'co-view': coview_results, 'co-read': coread_results, 'cite': cite_results, 'co-cite': cocite_results}
@@ -90,7 +91,7 @@ def qrel_metrics(qrel_file, run_file, metrics=('ndcg', 'map')):
     return metric_values
 
 
-def make_run_from_embeddings(qrel_file, embeddings, run_file, topk=5, multifacet_behavior='concat', user_citation_normalize=False, generate_random_embeddings=False):
+def make_run_from_embeddings(qrel_file, embeddings, run_file, topk=5, multifacet_behavior='concat', user_citation_normalize=False, user_citation_metric="l2", generate_random_embeddings=False):
     """Given embeddings and a qrel file, construct a run file.
 
     Arguments:
@@ -174,8 +175,6 @@ def make_run_from_embeddings(qrel_file, embeddings, run_file, topk=5, multifacet
         # calculate similarity based on l2 norm
         emb_query = np.array(emb_query)
 
-        # trec_eval assumes higher scores are more relevant
-        # here the closer distance means higher relevance; therefore, we multiply distances by -1
         if multifacet_behavior == 'extra_linear':
             # Record distance calculated between all combinations of
             # facet embeddings from query AND
@@ -189,17 +188,32 @@ def make_run_from_embeddings(qrel_file, embeddings, run_file, topk=5, multifacet
 
                     for facet_query in range(len(emb_query)):
                         for facet_candidate in range(len(e)):
-                            all_possible_distances.append(np.linalg.norm(emb_query[facet_query] - e[facet_candidate]))
+                            if user_citation_metric == "dot":
+                                all_possible_distances.append(np.dot(emb_query[facet_query], e[facet_candidate]))
+                            else:
+                                all_possible_distances.append(np.linalg.norm(emb_query[facet_query] - e[facet_candidate]))
 
-                    # The minimum distance (highest score) achieved by one of the embeddings
+                    # The highest score achieved by one of the embeddings
                     # should be used as the final score.
-                    distances.append(-np.min(all_possible_distances))
+                    if user_citation_metric == "dot":
+                        # For dot product, simply choose the biggest dot product value obtained.
+                        distances.append(np.max(all_possible_distances))
+                    else:
+                        # For L2, the highest score is obtained by negating minimum distance.
+                        distances.append(-np.min(all_possible_distances))
                 else:
                     distances.append(float("-inf"))
         else:
-            distances = [-np.linalg.norm(emb_query - np.array(e))
-                        if len(e) > 0 else float("-inf")
-                        for e in emb_candidates]
+            if user_citation_metric == "dot":
+                distances = [np.dot(emb_query, np.array(e))
+                            if len(e) > 0 else float("-inf")
+                            for e in emb_candidates]
+            else:
+                # trec_eval assumes higher scores are more relevant
+                # here the closer distance means higher relevance; therefore, we multiply distances by -1
+                distances = [-np.linalg.norm(emb_query - np.array(e))
+                            if len(e) > 0 else float("-inf")
+                            for e in emb_candidates]
 
         distance_with_ids = list(zip(candidate_ids, distances))
 
