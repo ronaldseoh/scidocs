@@ -10,6 +10,7 @@ def get_scidocs_metrics(data_paths,
                         val_or_test='test',
                         multifacet_behavior='concat',
                         cls_svm=False,
+                        user_citation_normalize=False,
                         n_jobs=-1,
                         cuda_device=-1):
     """This is the master wrapper that computes the SciDocs metrics given
@@ -44,7 +45,7 @@ def get_scidocs_metrics(data_paths,
     )
 
     scidocs_metrics.update(
-        get_view_cite_read_metrics(data_paths, user_activity_and_citations_embeddings_path, val_or_test=val_or_test, multifacet_behavior=multifacet_behavior)
+        get_view_cite_read_metrics(data_paths, user_activity_and_citations_embeddings_path, val_or_test=val_or_test, multifacet_behavior=multifacet_behavior, user_citation_normalize=user_citation_normalize)
     )
 
     scidocs_metrics.update(

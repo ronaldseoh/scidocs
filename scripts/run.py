@@ -18,6 +18,7 @@ def main():
 
     parser.add_argument('--multifacet-behavior', default="concat", choices=['concat', 'extra_linear'], type=str)
     parser.add_argument('--cls-svm', default=False, action='store_true')
+    parser.add_argument('--user-citation-normalize', default=False, action='store_true')
 
     parser.add_argument('--n-jobs', default=12, help='number of parallel jobs for classification (related to mesh/mag metrics)', type=int)
     parser.add_argument('--cuda-device', default=-1, help='specify if you want to use gpu for training the recommendation model; -1 means use cpu')
@@ -37,6 +38,7 @@ def main():
         val_or_test=args.val_or_test,
         multifacet_behavior=args.multifacet_behavior,
         cls_svm=args.cls_svm,
+        user_citation_normalize=args.user_citation_normalize,
         n_jobs=args.n_jobs,
         cuda_device=args.cuda_device
     )

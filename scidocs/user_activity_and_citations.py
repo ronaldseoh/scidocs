@@ -4,10 +4,11 @@ import pathlib
 import pytrec_eval
 import numpy as np
 from collections import defaultdict
+from sklearn.preprocessing import normalize
 from scidocs.embeddings import load_embeddings_from_jsonl
 
 
-def get_view_cite_read_metrics(data_paths, embeddings_path=None, val_or_test='test', multifacet_behavior='concat'):
+def get_view_cite_read_metrics(data_paths, embeddings_path=None, val_or_test='test', multifacet_behavior='concat', user_citation_normalize=False):
     """Run the cocite, coread, coview, cite task evaluations.
 
     Arguments:
@@ -31,28 +32,28 @@ def get_view_cite_read_metrics(data_paths, embeddings_path=None, val_or_test='te
 
     print('Running the co-view, co-read, cite, and co-cite tasks...')
     if val_or_test == 'test':
-        make_run_from_embeddings(data_paths.coview_test, embeddings, run_path, topk=5, multifacet_behavior=multifacet_behavior, generate_random_embeddings=False)
+        make_run_from_embeddings(data_paths.coview_test, embeddings, run_path, topk=5, multifacet_behavior=multifacet_behavior, user_citation_normalize=user_citation_normalize, generate_random_embeddings=False)
         coview_results = qrel_metrics(data_paths.coview_test, run_path, metrics=('ndcg', 'map'))
 
-        make_run_from_embeddings(data_paths.coread_test, embeddings, run_path, topk=5, multifacet_behavior=multifacet_behavior, generate_random_embeddings=False)
+        make_run_from_embeddings(data_paths.coread_test, embeddings, run_path, topk=5, multifacet_behavior=multifacet_behavior, user_citation_normalize=user_citation_normalize, generate_random_embeddings=False)
         coread_results = qrel_metrics(data_paths.coread_test, run_path, metrics=('ndcg', 'map'))
 
-        make_run_from_embeddings(data_paths.cite_test, embeddings, run_path, topk=5, multifacet_behavior=multifacet_behavior,  generate_random_embeddings=False)
+        make_run_from_embeddings(data_paths.cite_test, embeddings, run_path, topk=5, multifacet_behavior=multifacet_behavior,  user_citation_normalize=user_citation_normalize, generate_random_embeddings=False)
         cite_results = qrel_metrics(data_paths.cite_test, run_path, metrics=('ndcg', 'map'))
 
-        make_run_from_embeddings(data_paths.cocite_test, embeddings, run_path, topk=5, multifacet_behavior=multifacet_behavior, generate_random_embeddings=False)
+        make_run_from_embeddings(data_paths.cocite_test, embeddings, run_path, topk=5, multifacet_behavior=multifacet_behavior, user_citation_normalize=user_citation_normalize, generate_random_embeddings=False)
         cocite_results = qrel_metrics(data_paths.cocite_test, run_path, metrics=('ndcg', 'map'))
     elif val_or_test == 'val':
-        make_run_from_embeddings(data_paths.coview_val, embeddings, run_path, topk=5, multifacet_behavior=multifacet_behavior, generate_random_embeddings=False)
+        make_run_from_embeddings(data_paths.coview_val, embeddings, run_path, topk=5, multifacet_behavior=multifacet_behavior, user_citation_normalize=user_citation_normalize, generate_random_embeddings=False)
         coview_results = qrel_metrics(data_paths.coview_val, run_path, metrics=('ndcg', 'map'))
 
-        make_run_from_embeddings(data_paths.coread_val, embeddings, run_path, topk=5, multifacet_behavior=multifacet_behavior, generate_random_embeddings=False)
+        make_run_from_embeddings(data_paths.coread_val, embeddings, run_path, topk=5, multifacet_behavior=multifacet_behavior, user_citation_normalize=user_citation_normalize, generate_random_embeddings=False)
         coread_results = qrel_metrics(data_paths.coread_val, run_path, metrics=('ndcg', 'map'))
 
-        make_run_from_embeddings(data_paths.cite_val, embeddings, run_path, topk=5, multifacet_behavior=multifacet_behavior, generate_random_embeddings=False)
+        make_run_from_embeddings(data_paths.cite_val, embeddings, run_path, topk=5, multifacet_behavior=multifacet_behavior, user_citation_normalize=user_citation_normalize, generate_random_embeddings=False)
         cite_results = qrel_metrics(data_paths.cite_val, run_path, metrics=('ndcg', 'map'))
 
-        make_run_from_embeddings(data_paths.cocite_val, embeddings, run_path, topk=5, multifacet_behavior=multifacet_behavior, generate_random_embeddings=False)
+        make_run_from_embeddings(data_paths.cocite_val, embeddings, run_path, topk=5, multifacet_behavior=multifacet_behavior, user_citation_normalize=user_citation_normalize, generate_random_embeddings=False)
         cocite_results = qrel_metrics(data_paths.cocite_val, run_path, metrics=('ndcg', 'map'))
     
     return {'co-view': coview_results, 'co-read': coread_results, 'cite': cite_results, 'co-cite': cocite_results}
@@ -89,7 +90,7 @@ def qrel_metrics(qrel_file, run_file, metrics=('ndcg', 'map')):
     return metric_values
 
 
-def make_run_from_embeddings(qrel_file, embeddings, run_file, topk=5, multifacet_behavior='concat', generate_random_embeddings=False):
+def make_run_from_embeddings(qrel_file, embeddings, run_file, topk=5, multifacet_behavior='concat', user_citation_normalize=False, generate_random_embeddings=False):
     """Given embeddings and a qrel file, construct a run file.
 
     Arguments:
@@ -129,8 +130,15 @@ def make_run_from_embeddings(qrel_file, embeddings, run_file, topk=5, multifacet
             else:
                 if multifacet_behavior == 'extra_linear':
                     emb_query = embeddings[pid]
+
+                    if user_citation_normalize:
+                        emb_query = normalize(emb_query, norm="l2", axis=1)
                 else:
                     emb_query = embeddings[pid].flatten()
+
+                    if user_citation_normalize:
+                        emb_query = normalize(emb_query.reshape(1, -1), norm="l2", axis=1)
+
         except KeyError:
             missing_queries += 1
             continue
@@ -146,9 +154,18 @@ def make_run_from_embeddings(qrel_file, embeddings, run_file, topk=5, multifacet
                     emb_candidates.append(np.random.normal(0, 0.67, 200))
                 else:
                     if multifacet_behavior == 'extra_linear':
-                        emb_candidates.append(embeddings[paper_id])
+                        candidate_embeddings = embeddings[paper_id]
+
+                        if user_citation_normalize:
+                            candidate_embeddings = normalize(candidate_embeddings, norm="l2", axis=1)
                     else:
-                        emb_candidates.append(embeddings[paper_id].flatten())
+                        candidate_embeddings = embeddings[paper_id].flatten()
+
+                        if user_citation_normalize:
+                            candidate_embeddings = normalize(candidate_embeddings.reshape(1, -1), norm="l2", axis=1)
+                            
+                    emb_candidates.append(candidate_embeddings)
+
                 candidate_ids.append(paper_id)
                 success_candidates += 1
             except KeyError:
