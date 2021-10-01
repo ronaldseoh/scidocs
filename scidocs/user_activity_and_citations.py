@@ -160,9 +160,25 @@ def make_run_from_embeddings(qrel_file, embeddings, run_file, topk=5, multifacet
         # trec_eval assumes higher scores are more relevant
         # here the closer distance means higher relevance; therefore, we multiply distances by -1
         if multifacet_behavior == 'extra_linear':
-            distances = [-np.min([np.linalg.norm(emb_query[facet_query] - e[facet_candidate]) for facet_candidate in range(len(e)) for facet_query in range(len(emb_query))])
-                        if len(e) > 0 else float("-inf")
-                        for e in emb_candidates]
+            # Record distance calculated between all combinations of
+            # facet embeddings from query AND
+            # facet embeddings from each candidate paper.
+            # Note: This list should have the same ordering as emb_candidates.
+            distances = []
+
+            for e in emb_candidates:
+                if len(e) > 0:
+                    all_possible_distances = []
+
+                    for facet_query in range(len(emb_query)):
+                        for facet_candidate in range(len(e)):
+                            all_possible_distances.append(np.linalg.norm(emb_query[facet_query] - e[facet_candidate]))
+
+                    # The minimum distance (highest score) achieved by one of the embeddings
+                    # should be used as the final score.
+                    distances.append(-np.min(all_possible_distances))
+                else:
+                    distances.append(float("-inf"))
         else:
             distances = [-np.linalg.norm(emb_query - np.array(e))
                         if len(e) > 0 else float("-inf")
