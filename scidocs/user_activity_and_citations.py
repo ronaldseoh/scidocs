@@ -202,6 +202,10 @@ def make_run_from_embeddings(qrel_file, embeddings, run_file, topk=5, multifacet
                 distances = [np.dot(emb_query, e.T)[0][0]
                             if len(e) > 0 else float("-inf")
                             for e in emb_candidates]
+            elif user_citation_metric == "cosine":
+                distances = [cosine_similarity(emb_query, e.T)[0][0]
+                            if len(e) > 0 else float("-inf")
+                            for e in emb_candidates]
             else:
                 # trec_eval assumes higher scores are more relevant
                 # here the closer distance means higher relevance; therefore, we multiply distances by -1
