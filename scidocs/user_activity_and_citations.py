@@ -5,6 +5,7 @@ import pytrec_eval
 import numpy as np
 from collections import defaultdict
 from sklearn.preprocessing import normalize
+from sklearn.metrics.pairwise import cosine_similarity, euclidean_distances
 from scidocs.embeddings import load_embeddings_from_jsonl
 
 
@@ -135,10 +136,7 @@ def make_run_from_embeddings(qrel_file, embeddings, run_file, topk=5, multifacet
                     emb_query = embeddings[pid].flatten()
 
                 if user_citation_normalize:
-                    if len(emb_query) == 1:
-                        emb_query = normalize(emb_query.reshape(1, -1), norm="l2", axis=1)
-                    elif user_citation_normalize:
-                        emb_query = normalize(emb_query, norm="l2", axis=1)
+                    emb_query = normalize(emb_query, norm="l2", axis=1)
 
         except KeyError:
             missing_queries += 1
@@ -162,10 +160,7 @@ def make_run_from_embeddings(qrel_file, embeddings, run_file, topk=5, multifacet
                         candidate_embeddings = embeddings[paper_id].flatten()
 
                     if user_citation_normalize:
-                        if len(candidate_embeddings) == 1:
-                            candidate_embeddings = normalize(candidate_embeddings.reshape(1, -1), norm="l2", axis=1)
-                        else:
-                            candidate_embeddings = normalize(candidate_embeddings, norm="l2", axis=1)
+                        candidate_embeddings = normalize(candidate_embeddings, norm="l2", axis=1)
 
                     emb_candidates.append(candidate_embeddings)
 
@@ -185,17 +180,17 @@ def make_run_from_embeddings(qrel_file, embeddings, run_file, topk=5, multifacet
                 if len(e) > 0:
                     all_possible_distances = []
 
-                    for facet_query in range(len(emb_query)):
-                        for facet_candidate in range(len(e)):
-                            if user_citation_metric == "dot":
-                                all_possible_distances.append(np.dot(emb_query[facet_query], e[facet_candidate]))
-                            else:
-                                all_possible_distances.append(np.linalg.norm(emb_query[facet_query] - e[facet_candidate]))
+                    if user_citation_metric == "dot":
+                        all_possible_distances = np.dot(emb_query, e.T)
+                    elif user_citation_metric == "cosine":
+                        all_possible_distances = cosine_similarity(emb_query, e)
+                    else:
+                        all_possible_distances = euclidean_distances(emb_query, e)
 
                     # The highest score achieved by one of the embeddings
                     # should be used as the final score.
-                    if user_citation_metric == "dot":
-                        # For dot product, simply choose the biggest dot product value obtained.
+                    if user_citation_metric in ("dot", "cosine"):
+                        # For dot product and cosine similarity, simply choose the biggest dot product/similarity value obtained.
                         distances.append(np.max(all_possible_distances))
                     else:
                         # For L2, the highest score is obtained by negating minimum distance.
@@ -204,13 +199,13 @@ def make_run_from_embeddings(qrel_file, embeddings, run_file, topk=5, multifacet
                     distances.append(float("-inf"))
         else:
             if user_citation_metric == "dot":
-                distances = [np.dot(emb_query, np.array(e))
+                distances = [np.dot(emb_query, e.T)[0][0]
                             if len(e) > 0 else float("-inf")
                             for e in emb_candidates]
             else:
                 # trec_eval assumes higher scores are more relevant
                 # here the closer distance means higher relevance; therefore, we multiply distances by -1
-                distances = [-np.linalg.norm(emb_query - np.array(e))
+                distances = [-euclidean_distances(emb_query, e)[0][0]
                             if len(e) > 0 else float("-inf")
                             for e in emb_candidates]
 
