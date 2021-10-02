@@ -131,14 +131,14 @@ def make_run_from_embeddings(qrel_file, embeddings, run_file, topk=5, multifacet
             else:
                 if multifacet_behavior == 'extra_linear':
                     emb_query = embeddings[pid]
-
-                    if user_citation_normalize:
-                        emb_query = normalize(emb_query, norm="l2", axis=1)
                 else:
                     emb_query = embeddings[pid].flatten()
 
-                    if user_citation_normalize:
+                if user_citation_normalize:
+                    if len(emb_query) == 1:
                         emb_query = normalize(emb_query.reshape(1, -1), norm="l2", axis=1)
+                    elif user_citation_normalize:
+                        emb_query = normalize(emb_query, norm="l2", axis=1)
 
         except KeyError:
             missing_queries += 1
