@@ -4,8 +4,7 @@ import math
 import torch
 import os
 import subprocess
-import hashlib
-import datetime
+import uuid
 import numpy as np
 
 from allennlp.data.dataset_readers.dataset_reader import DatasetReader
@@ -168,8 +167,7 @@ def get_recomm_metrics(data_paths:DataPaths, embeddings_path, val_or_test='test'
 
     serialization_dir = os.path.join(
         data_paths.base_path, "recomm-tmp", str(num_facets),
-        hashlib.sha256(str.encode(embeddings_path)).hexdigest(),
-        str(numpy.random.randn()))
+        str(uuid.uuid4()))
 
     simpapers_model_path = os.path.join(serialization_dir, "model.tar.gz")
     shutil.rmtree(serialization_dir, ignore_errors=True)
