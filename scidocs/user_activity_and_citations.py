@@ -13,7 +13,7 @@ def get_view_cite_read_metrics(data_paths, embeddings_path=None, val_or_test='te
     """Run the cocite, coread, coview, cite task evaluations.
 
     Arguments:
-        data_paths {scidocs.paths.DataPaths} -- A DataPaths objects that points to 
+        data_paths {scidocs.paths.DataPaths} -- A DataPaths objects that points to
                                                 all of the SciDocs files
 
     Keyword Arguments:
@@ -25,11 +25,11 @@ def get_view_cite_read_metrics(data_paths, embeddings_path=None, val_or_test='te
         metrics {dict} -- NDCG and MAP for all four tasks.
     """
     assert val_or_test in ('val', 'test'), "The val_or_test parameter must be one of 'val' or 'test'"
-    
+
     print('Loading co-view, co-read, cite, and co-cite embeddings...')
     embeddings = load_embeddings_from_jsonl(embeddings_path)
 
-    run_path = os.path.join(data_paths.base_path, 'temp.run')     
+    run_path = os.path.join(data_paths.base_path, 'temp.run')
 
     print('Running the co-view, co-read, cite, and co-cite tasks...')
     if val_or_test == 'test':
@@ -56,7 +56,7 @@ def get_view_cite_read_metrics(data_paths, embeddings_path=None, val_or_test='te
 
         make_run_from_embeddings(data_paths.cocite_val, embeddings, run_path, topk=5, multifacet_behavior=multifacet_behavior, user_citation_normalize=user_citation_normalize, user_citation_metric=user_citation_metric, generate_random_embeddings=False)
         cocite_results = qrel_metrics(data_paths.cocite_val, run_path, metrics=('ndcg', 'map'))
-    
+
     return {'co-view': coview_results, 'co-read': coread_results, 'cite': cite_results, 'co-cite': cocite_results}
 
 
@@ -77,14 +77,14 @@ def qrel_metrics(qrel_file, run_file, metrics=('ndcg', 'map')):
 
     with open(run_file, 'r') as f_run:
         run = pytrec_eval.parse_run(f_run)
-        
+
     evaluator = pytrec_eval.RelevanceEvaluator(qrel, set(metrics))
     results = evaluator.evaluate(run)
 
     metric_values = {}
     for measure in sorted(metrics):
         res = pytrec_eval.compute_aggregated_measure(
-                measure, 
+                measure,
                 [query_measures[measure]  for query_measures in results.values()]
             )
         metric_values[measure] = np.round(100 * res, 2)
@@ -100,7 +100,7 @@ def make_run_from_embeddings(qrel_file, embeddings, run_file, topk=5, multifacet
         run_file -- where to put the run file that is generated
         topk -- how many of the top nearest neighbors to write
         generate_random_embeddings -- whether to just use random emebddings and ignore the `embeddings` variable
-                   
+
 
     Returns:
         None
@@ -158,15 +158,15 @@ def make_run_from_embeddings(qrel_file, embeddings, run_file, topk=5, multifacet
                 else:
                     if multifacet_behavior == 'extra_linear':
                         candidate_embeddings = embeddings[paper_id]
-
-                        if user_citation_normalize:
-                            candidate_embeddings = normalize(candidate_embeddings, norm="l2", axis=1)
                     else:
                         candidate_embeddings = embeddings[paper_id].flatten()
 
-                        if user_citation_normalize:
+                    if user_citation_normalize:
+                        if len(candidate_embeddings) == 1:
                             candidate_embeddings = normalize(candidate_embeddings.reshape(1, -1), norm="l2", axis=1)
-                            
+                        else:
+                            candidate_embeddings = normalize(candidate_embeddings, norm="l2", axis=1)
+
                     emb_candidates.append(candidate_embeddings)
 
                 candidate_ids.append(paper_id)
