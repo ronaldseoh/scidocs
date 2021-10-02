@@ -143,9 +143,11 @@ def make_run_from_embeddings(qrel_file, embeddings, run_file, topk=5, multifacet
         except KeyError:
             missing_queries += 1
             continue
+
         if len(emb_query) == 0:
             missing_queries += 1
             continue
+
         # all embeddings for candidate paper ids in the qrel file
         emb_candidates = []
         candidate_ids = []
@@ -171,9 +173,6 @@ def make_run_from_embeddings(qrel_file, embeddings, run_file, topk=5, multifacet
                 success_candidates += 1
             except KeyError:
                 key_error += 1
-
-        # calculate similarity based on l2 norm
-        emb_query = np.array(emb_query)
 
         if multifacet_behavior == 'extra_linear':
             # Record distance calculated between all combinations of
