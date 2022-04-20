@@ -16,7 +16,6 @@ def main():
     parser.add_argument('--val_or_test', default='test', help='whether to evaluate scidocs on test data (what is reported in the specter paper) or validation data (to tune hyperparameters)')
 
     parser.add_argument('--multifacet-behavior', default="concat", choices=['concat', 'extra_linear'], type=str)
-    parser.add_argument('--cls-svm', default=False, action='store_true')
     parser.add_argument('--user-citation-normalize', default=False, action='store_true')
     parser.add_argument('--user-citation-metric', default="l2", choices=["l2", "dot", "cosine"], type=str)
 
