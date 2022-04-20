@@ -10,7 +10,7 @@ from scidocs.embeddings import load_embeddings_from_jsonl
 
 
 def get_view_cite_read_metrics(data_paths, embeddings_path=None, val_or_test='test', multifacet_behavior='concat',
-                               user_citation_normalize=False, user_citation_metric="l2"):
+                               user_citation_normalize=False, user_citation_metric="l2", tasks_to_run=['cite', 'cocite', 'coview', 'coread']):
     """Run the cocite, coread, coview, cite task evaluations.
 
     Arguments:
@@ -34,31 +34,53 @@ def get_view_cite_read_metrics(data_paths, embeddings_path=None, val_or_test='te
 
     print('Running the co-view, co-read, cite, and co-cite tasks...')
     if val_or_test == 'test':
-        make_run_from_embeddings(data_paths.coview_test, embeddings, run_path, topk=5, multifacet_behavior=multifacet_behavior, user_citation_normalize=user_citation_normalize, user_citation_metric=user_citation_metric, generate_random_embeddings=False)
-        coview_results = qrel_metrics(data_paths.coview_test, run_path, metrics=('ndcg', 'map'))
+        if 'coview' in tasks_to_run:
+            make_run_from_embeddings(data_paths.coview_test, embeddings, run_path, topk=5, multifacet_behavior=multifacet_behavior, user_citation_normalize=user_citation_normalize, user_citation_metric=user_citation_metric, generate_random_embeddings=False)
+            coview_results = qrel_metrics(data_paths.coview_test, run_path, metrics=('ndcg', 'map'))
 
-        make_run_from_embeddings(data_paths.coread_test, embeddings, run_path, topk=5, multifacet_behavior=multifacet_behavior, user_citation_normalize=user_citation_normalize, user_citation_metric=user_citation_metric, generate_random_embeddings=False)
-        coread_results = qrel_metrics(data_paths.coread_test, run_path, metrics=('ndcg', 'map'))
+        if 'coread' in tasks_to_run:
+            make_run_from_embeddings(data_paths.coread_test, embeddings, run_path, topk=5, multifacet_behavior=multifacet_behavior, user_citation_normalize=user_citation_normalize, user_citation_metric=user_citation_metric, generate_random_embeddings=False)
+            coread_results = qrel_metrics(data_paths.coread_test, run_path, metrics=('ndcg', 'map'))
 
-        make_run_from_embeddings(data_paths.cite_test, embeddings, run_path, topk=5, multifacet_behavior=multifacet_behavior,  user_citation_normalize=user_citation_normalize, user_citation_metric=user_citation_metric, generate_random_embeddings=False)
-        cite_results = qrel_metrics(data_paths.cite_test, run_path, metrics=('ndcg', 'map'))
+        if 'cite' in tasks_to_run:
+            make_run_from_embeddings(data_paths.cite_test, embeddings, run_path, topk=5, multifacet_behavior=multifacet_behavior,  user_citation_normalize=user_citation_normalize, user_citation_metric=user_citation_metric, generate_random_embeddings=False)
+            cite_results = qrel_metrics(data_paths.cite_test, run_path, metrics=('ndcg', 'map'))
 
-        make_run_from_embeddings(data_paths.cocite_test, embeddings, run_path, topk=5, multifacet_behavior=multifacet_behavior, user_citation_normalize=user_citation_normalize, user_citation_metric=user_citation_metric, generate_random_embeddings=False)
-        cocite_results = qrel_metrics(data_paths.cocite_test, run_path, metrics=('ndcg', 'map'))
+        if 'cocite' in tasks_to_run:
+            make_run_from_embeddings(data_paths.cocite_test, embeddings, run_path, topk=5, multifacet_behavior=multifacet_behavior, user_citation_normalize=user_citation_normalize, user_citation_metric=user_citation_metric, generate_random_embeddings=False)
+            cocite_results = qrel_metrics(data_paths.cocite_test, run_path, metrics=('ndcg', 'map'))
     elif val_or_test == 'val':
-        make_run_from_embeddings(data_paths.coview_val, embeddings, run_path, topk=5, multifacet_behavior=multifacet_behavior, user_citation_normalize=user_citation_normalize, user_citation_metric=user_citation_metric, generate_random_embeddings=False)
-        coview_results = qrel_metrics(data_paths.coview_val, run_path, metrics=('ndcg', 'map'))
+        if 'coview' in tasks_to_run:
+            make_run_from_embeddings(data_paths.coview_val, embeddings, run_path, topk=5, multifacet_behavior=multifacet_behavior, user_citation_normalize=user_citation_normalize, user_citation_metric=user_citation_metric, generate_random_embeddings=False)
+            coview_results = qrel_metrics(data_paths.coview_val, run_path, metrics=('ndcg', 'map'))
 
-        make_run_from_embeddings(data_paths.coread_val, embeddings, run_path, topk=5, multifacet_behavior=multifacet_behavior, user_citation_normalize=user_citation_normalize, user_citation_metric=user_citation_metric, generate_random_embeddings=False)
-        coread_results = qrel_metrics(data_paths.coread_val, run_path, metrics=('ndcg', 'map'))
+        if 'coread' in tasks_to_run:
+            make_run_from_embeddings(data_paths.coread_val, embeddings, run_path, topk=5, multifacet_behavior=multifacet_behavior, user_citation_normalize=user_citation_normalize, user_citation_metric=user_citation_metric, generate_random_embeddings=False)
+            coread_results = qrel_metrics(data_paths.coread_val, run_path, metrics=('ndcg', 'map'))
 
-        make_run_from_embeddings(data_paths.cite_val, embeddings, run_path, topk=5, multifacet_behavior=multifacet_behavior, user_citation_normalize=user_citation_normalize, user_citation_metric=user_citation_metric, generate_random_embeddings=False)
-        cite_results = qrel_metrics(data_paths.cite_val, run_path, metrics=('ndcg', 'map'))
+        if 'cite' in tasks_to_run:
+            make_run_from_embeddings(data_paths.cite_val, embeddings, run_path, topk=5, multifacet_behavior=multifacet_behavior, user_citation_normalize=user_citation_normalize, user_citation_metric=user_citation_metric, generate_random_embeddings=False)
+            cite_results = qrel_metrics(data_paths.cite_val, run_path, metrics=('ndcg', 'map'))
 
-        make_run_from_embeddings(data_paths.cocite_val, embeddings, run_path, topk=5, multifacet_behavior=multifacet_behavior, user_citation_normalize=user_citation_normalize, user_citation_metric=user_citation_metric, generate_random_embeddings=False)
-        cocite_results = qrel_metrics(data_paths.cocite_val, run_path, metrics=('ndcg', 'map'))
+        if 'cocite' in tasks_to_run:
+            make_run_from_embeddings(data_paths.cocite_val, embeddings, run_path, topk=5, multifacet_behavior=multifacet_behavior, user_citation_normalize=user_citation_normalize, user_citation_metric=user_citation_metric, generate_random_embeddings=False)
+            cocite_results = qrel_metrics(data_paths.cocite_val, run_path, metrics=('ndcg', 'map'))
 
-    return {'co-view': coview_results, 'co-read': coread_results, 'cite': cite_results, 'co-cite': cocite_results}
+    all_results = {}
+
+    if 'coview' in tasks_to_run:
+        all_results['co-view'] = coview_results
+
+    if 'coread' in tasks_to_run:
+        all_results['co-read'] = coread_results
+
+    if 'cite' in tasks_to_run:
+        all_results['cite'] = cite_results
+
+    if 'cocite' in tasks_to_run:
+        all_results['co-cite'] = cocite_results
+
+    return all_results
 
 
 def qrel_metrics(qrel_file, run_file, metrics=('ndcg', 'map')):
