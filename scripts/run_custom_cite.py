@@ -32,7 +32,7 @@ def main():
     scidocs_metrics = {}
 
     scidocs_metrics.update(
-        get_view_cite_read_metrics(data_paths, args.user_citation, val_or_test=args.val_or_test, multifacet_behavior=args.multifacet_behavior, user_citation_normalize=args.user_citation_normalize, user_citation_metric=args.user_citation_metric)
+        get_view_cite_read_metrics(data_paths, args.user_citation, val_or_test=args.val_or_test, multifacet_behavior=args.multifacet_behavior, user_citation_normalize=args.user_citation_normalize, user_citation_metric=args.user_citation_metric, tasks_to_run=['cite', 'cocite'])
     )
 
     flat_metrics = {}
