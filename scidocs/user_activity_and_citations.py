@@ -1,6 +1,8 @@
 import os
 import operator
 import pathlib
+import tempfile
+
 import pytrec_eval
 import numpy as np
 from collections import defaultdict
@@ -10,7 +12,7 @@ from scidocs.embeddings import load_embeddings_from_jsonl
 
 
 def get_view_cite_read_metrics(data_paths, embeddings_path=None, val_or_test='test', multifacet_behavior='concat',
-                               user_citation_normalize=False, user_citation_metric="l2", tasks_to_run=['cite', 'cocite', 'coview', 'coread']):
+                               user_citation_normalize=False, user_citation_metric="l2", tasks_to_run=['cite', 'cocite', 'coview', 'coread'], temp_save_path=None):
     """Run the cocite, coread, coview, cite task evaluations.
 
     Arguments:
@@ -30,7 +32,10 @@ def get_view_cite_read_metrics(data_paths, embeddings_path=None, val_or_test='te
     print('Loading co-view, co-read, cite, and co-cite embeddings...')
     embeddings = load_embeddings_from_jsonl(embeddings_path)
 
-    run_path = os.path.join(data_paths.base_path, 'temp.run')
+    if temp_save_path is not None:
+        run_path = os.path.join(temp_save_path, 'temp.run')
+    else:
+        run_path = os.path.join(tempfile.mkdtemp(), 'temp.run')
 
     print('Running the co-view, co-read, cite, and co-cite tasks...')
     if val_or_test == 'test':
