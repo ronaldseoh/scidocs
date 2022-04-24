@@ -4,7 +4,9 @@ import math
 import torch
 import os
 import subprocess
-import uuid
+import tempfile
+import pathlib
+
 import numpy as np
 
 from allennlp.data.dataset_readers.dataset_reader import DatasetReader
@@ -118,7 +120,7 @@ def evaluate_ranking_performance(archive_path, test_data_path, cuda_device):
     return metrics
 
 
-def get_recomm_metrics(data_paths:DataPaths, embeddings_path, val_or_test='test', multifacet_behavior='concat', cuda_device=-1):
+def get_recomm_metrics(data_paths:DataPaths, embeddings_path, val_or_test='test', multifacet_behavior='concat', cuda_device=-1, temp_save_path=None):
     """Run the recommendations task evaluation.
 
     Arguments:
@@ -161,13 +163,16 @@ def get_recomm_metrics(data_paths:DataPaths, embeddings_path, val_or_test='test'
     else:
         os.environ['TEST_PATH'] = data_paths.recomm_val
         os.environ['VALID_PATH'] = ""
+
     os.environ['PROP_SCORE_PATH'] = data_paths.recomm_propensity_scores
     os.environ['PAPER_METADATA_PATH'] = data_paths.paper_metadata_recomm
     os.environ['jsonlines_embedding_format'] = "true"
-
-    serialization_dir = os.path.join(
-        data_paths.base_path, "recomm-tmp", str(num_facets),
-        str(uuid.uuid4()))
+    
+    if temp_save_path is not None:
+        serialization_dir = os.path.join(temp_save_path, "recomm-tmp")
+        pathlib.Path(serialization_dir).mkdir(parents=True, exist_ok=True)
+    else:
+        serialization_dir = tempfile.mkdtemp()
 
     simpapers_model_path = os.path.join(serialization_dir, "model.tar.gz")
     shutil.rmtree(serialization_dir, ignore_errors=True)
