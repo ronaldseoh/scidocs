@@ -1,4 +1,4 @@
-import json
+import ujson as json
 import collections
 import statistics
 
@@ -13,11 +13,17 @@ if __name__ == '__main__':
     num_query_paper_ids_found_mag = 0
     num_pos_paper_ids_found_mag = 0
 
+    num_triples_pos_cross_domain_pure = 0
+    num_triples_neg_cross_domain_pure = 0
+
+    num_triples_pos_cross_domain = 0
+    num_triples_neg_cross_domain = 0
+
     unique_paper_ids = set()
 
-    extra_metadata = json.load(open('/mnt/nfs/scratch1/bseoh/scincl_dataset/scidocs_extra_metadata.json', 'r'))
+    extra_metadata = json.load(open('mag_fields_by_all_paper_ids.json', 'r'))
 
-    with open("data/cite/test.qrel", 'r') as f_in:
+    with open("cite/test.qrel", 'r') as f_in:
         lines = f_in.readlines()
 
         for l in tqdm.tqdm(lines):
@@ -30,18 +36,25 @@ if __name__ == '__main__':
             unique_paper_ids.add(query_paper_id)
             unique_paper_ids.add(pos_paper_id)
 
-            if query_paper_id in extra_metadata.keys() and extra_metadata[query_paper_id]['mag_field_of_study'] is not None:
+            if query_paper_id in extra_metadata.keys() and len(extra_metadata[query_paper_id]) > 0:
                 num_query_paper_ids_found_mag += 1
 
-                for f in extra_metadata[query_paper_id]['mag_field_of_study']:
+                for f in extra_metadata[query_paper_id]:
                     query_paper_count_by_mag_field[f] += 1
             else:
                 query_paper_count_by_mag_field['**Unknown**'] += 1
 
-            if pos_paper_id in extra_metadata.keys() and extra_metadata[pos_paper_id]['mag_field_of_study'] is not None:
+            if pos_paper_id in extra_metadata.keys() and len(extra_metadata[pos_paper_id]) > 0:
                 num_pos_paper_ids_found_mag += 1
 
-                for f in extra_metadata[pos_paper_id]['mag_field_of_study']:
+                if query_paper_id in extra_metadata.keys() and len(extra_metadata[query_paper_id]) > 0:
+                    if len(set(extra_metadata[query_paper_id]).intersection(set(extra_metadata[pos_paper_id]))) == 0:
+                        num_triples_pos_cross_domain_pure += 1
+
+                    if len(set(extra_metadata[pos_paper_id]) - set(extra_metadata[query_paper_id])) > 0:
+                        num_triples_pos_cross_domain += 1
+
+                for f in extra_metadata[pos_paper_id]:
                     pos_paper_count_by_mag_field[f] += 1
             else:
                 pos_paper_count_by_mag_field['**Unknown**'] += 1
