@@ -21,9 +21,11 @@ if __name__ == '__main__':
 
     unique_paper_ids = set()
 
-    extra_metadata = json.load(open('mag_fields_by_all_paper_ids.json', 'r'))
+    num_examples_pos_count = 0
 
-    with open("cite/test.qrel", 'r') as f_in:
+    extra_metadata = json.load(open('../scidocs-shard7-cocite/mag_fields_by_all_paper_ids.json', 'r'))
+
+    with open("cocite/test.qrel", 'r') as f_in:
         lines = f_in.readlines()
 
         for l in tqdm.tqdm(lines):
@@ -36,6 +38,8 @@ if __name__ == '__main__':
             if int(l_parsed[3]) == 1: # positive examples only
                 unique_paper_ids.add(query_paper_id)
                 unique_paper_ids.add(pos_paper_id)
+                
+                num_examples_pos_count += 1
 
                 if query_paper_id in extra_metadata.keys() and len(extra_metadata[query_paper_id]) > 0:
                     num_query_paper_ids_found_mag += 1
@@ -60,6 +64,7 @@ if __name__ == '__main__':
                 else:
                     pos_paper_count_by_mag_field['**Unknown**'] += 1
 
+    print('num_examples_pos_count=', str(num_examples_pos_count))
     print('num_query_paper_ids_found_mag=', str(num_query_paper_ids_found_mag))
     print('num_pos_paper_ids_found_mag=', str(num_pos_paper_ids_found_mag))
     print()
