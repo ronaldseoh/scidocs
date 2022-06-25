@@ -28,7 +28,7 @@ if __name__ == '__main__':
 
     extra_metadata = json.load(open('/gypsum/scratch1/bseoh/scincl_dataset/scidocs_extra_metadata.json', 'r'))
 
-    with open("cocite/test.qrel", 'r') as f_in:
+    with open("cite/test.qrel", 'r') as f_in:
         lines = f_in.readlines()
 
         for l in tqdm.tqdm(lines):
