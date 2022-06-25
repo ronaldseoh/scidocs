@@ -28,7 +28,7 @@ if __name__ == '__main__':
 
     extra_metadata = json.load(open('../scidocs-shard7/mag_fields_by_all_paper_ids.json', 'r'))
 
-    with open("cite/test.qrel", 'r') as f_in:
+    with open("cocite/test.qrel", 'r') as f_in:
         lines = f_in.readlines()
 
         for l in tqdm.tqdm(lines):
