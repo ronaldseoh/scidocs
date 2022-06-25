@@ -10,6 +10,9 @@ if __name__ == '__main__':
     query_paper_count_by_mag_field = collections.defaultdict(int)
     pos_paper_count_by_mag_field = collections.defaultdict(int)
 
+    query_paper_ids_seen = set()
+    pos_paper_ids_seen = set()
+
     num_query_paper_ids_found_mag = 0
     num_pos_paper_ids_found_mag = 0
 
@@ -41,7 +44,7 @@ if __name__ == '__main__':
                 
                 num_examples_pos_count += 1
 
-                if query_paper_id in extra_metadata.keys() and len(extra_metadata[query_paper_id]) > 0:
+                if query_paper_id not in query_paper_ids_seen and query_paper_id in extra_metadata.keys() and len(extra_metadata[query_paper_id]) > 0:
                     num_query_paper_ids_found_mag += 1
 
                     for f in extra_metadata[query_paper_id]:
@@ -50,7 +53,11 @@ if __name__ == '__main__':
                     query_paper_count_by_mag_field['**Unknown**'] += 1
 
                 if pos_paper_id in extra_metadata.keys() and len(extra_metadata[pos_paper_id]) > 0:
-                    num_pos_paper_ids_found_mag += 1
+                    if pos_paper_id not in pos_paper_ids_seen:
+                        num_pos_paper_ids_found_mag += 1
+
+                        for f in extra_metadata[pos_paper_id]:
+                            pos_paper_count_by_mag_field[f] += 1
 
                     if query_paper_id in extra_metadata.keys() and len(extra_metadata[query_paper_id]) > 0:
                         if len(set(extra_metadata[query_paper_id]).intersection(set(extra_metadata[pos_paper_id]))) == 0:
@@ -59,10 +66,13 @@ if __name__ == '__main__':
                         if len(set(extra_metadata[pos_paper_id]) - set(extra_metadata[query_paper_id])) > 0:
                             num_triples_pos_cross_domain += 1
 
-                    for f in extra_metadata[pos_paper_id]:
-                        pos_paper_count_by_mag_field[f] += 1
+
                 else:
-                    pos_paper_count_by_mag_field['**Unknown**'] += 1
+                    if pos_paper_id not in pos_paper_ids_seen:
+                        pos_paper_count_by_mag_field['**Unknown**'] += 1
+
+                query_paper_ids_seen.add(query_paper_id)
+                pos_paper_ids_seen.add(pos_paper_id)
 
     print('num_examples_pos_count=', str(num_examples_pos_count))
     print('num_query_paper_ids_found_mag=', str(num_query_paper_ids_found_mag))
