@@ -50,7 +50,8 @@ if __name__ == '__main__':
                     for f in extra_metadata[query_paper_id]:
                         query_paper_count_by_mag_field[f] += 1
                 else:
-                    query_paper_count_by_mag_field['**Unknown**'] += 1
+                    if query_paper_id not in query_paper_ids_seen:
+                        query_paper_count_by_mag_field['**Unknown**'] += 1
 
                 if pos_paper_id in extra_metadata.keys() and len(extra_metadata[pos_paper_id]) > 0:
                     if pos_paper_id not in pos_paper_ids_seen:
@@ -65,8 +66,6 @@ if __name__ == '__main__':
 
                         if len(set(extra_metadata[pos_paper_id]) - set(extra_metadata[query_paper_id])) > 0:
                             num_triples_pos_cross_domain += 1
-
-
                 else:
                     if pos_paper_id not in pos_paper_ids_seen:
                         pos_paper_count_by_mag_field['**Unknown**'] += 1
