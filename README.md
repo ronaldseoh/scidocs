@@ -7,9 +7,9 @@ This repo contains our modifications to the original SciDocs code to allow 1) mu
 The command for running the original set of tests in SciDocs:
 
 ```bash
-python scidocs/scripts/run.py --cls save_${EXPERIMENT_ID_PREFIX}_${EXPERIMENT_DATE}/cls.jsonl \
-                      --user-citation save_${EXPERIMENT_ID_PREFIX}_${EXPERIMENT_DATE}/user-citation.jsonl \
-                      --recomm save_${EXPERIMENT_ID_PREFIX}_${EXPERIMENT_DATE}/recomm.jsonl \
+python scidocs/scripts/run.py --cls save/cls.jsonl \
+                      --user-citation save/user-citation.jsonl \
+                      --recomm save/recomm.jsonl \
                       --data-path scidocs/data \
                       --val_or_test test \
                       --multifacet-behavior extra_linear \
