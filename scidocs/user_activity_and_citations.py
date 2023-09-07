@@ -110,6 +110,7 @@ def qrel_metrics(qrel_file, run_file, metrics=('ndcg', 'map')):
     results = evaluator.evaluate(run)
 
     metric_values = {}
+
     for measure in sorted(metrics):
         res = pytrec_eval.compute_aggregated_measure(
                 measure,
